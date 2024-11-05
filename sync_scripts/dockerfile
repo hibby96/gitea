@@ -1,0 +1,22 @@
+FROM alpine:latest
+
+# Install necessary tools
+RUN apk add --no-cache rsync git sed
+
+# Set up SSH directory with correct permissions
+RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
+
+# Copy scripts into container
+COPY sync.sh /home/sync.sh
+COPY reverse_sync.sh /home/reverse_sync.sh
+
+# Make scripts executable
+RUN chmod +x /home/sync.sh /home/reverse_sync.sh
+
+# Default environment variables (can be overwritten in docker run)
+ENV SYNC_INTERVAL=300
+ENV SSH_KEY_PATH=/root/.ssh/id_ed25519
+ENV COMPANY_NAME="company_name_to_strip_out"
+
+# Run the main sync script at intervals
+CMD while true; do /home/sync.sh; sleep $SYNC_INTERVAL; done
